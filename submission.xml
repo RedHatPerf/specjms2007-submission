@@ -1,0 +1,997 @@
+<configuration>
+
+  <info type="benchmark-info">
+
+    <properties name="test-info">
+        <entry key="submitter.name"><![CDATA[Red Hat Inc.]]></entry>
+      <entry key="system.title">A-MQ benchmark</entry>
+      <entry key="submitter.spec_license">0000</entry>
+      <entry key="submit.date.long">Fri Apr 29 13:14:00 EDT 2017</entry>
+      <entry key="result.noncompliant">no</entry>
+      <entry key="result.noncompliant.reason">Steady state run was not 30 minutes</entry>
+      <entry key="result.noncompliant.remedy">Increase steady state to 30 minutes</entry>
+    </properties>
+
+    <properties name="sut">
+      <entry key="server.nodes">1</entry>
+      <entry key="server.cpus.num_cores">16</entry>
+      <entry key="server.cpus.num_chips">2</entry>
+      <entry key="server.cpus.num_coresperchip">8</entry>
+      <entry key="server.instances">1</entry>
+      <entry key="client.nodes">4</entry>
+      <entry key="client.cpus.num_cores">12</entry>
+      <entry key="client.cpus.num_chips">2</entry>
+      <entry key="client.cpus.num_coresperchip">6</entry>
+      <entry key="client.jvms">1</entry>
+      <entry key="db.nodes">0</entry>
+      <entry key="db.cpus.num_cores">0</entry>
+      <entry key="db.cpus.num_chips">0</entry>
+      <entry key="db.cpus.num_coresperchip">0</entry>
+      <entry key="db.instances">0</entry>
+      <entry key="others"><![CDATA[
+   None.
+    ]]></entry>
+    </properties>
+
+    <properties name="general-notes">
+      <entry key="steady.state.req"><![CDATA[
+Any relevant information regarding periodic activities (e.g. checkpoints) run during the
+Measurement Period to ensure that the throughput level is in a steady state condition that
+represents the true sustainable performance of the SUT (see section 3.3).
+]]></entry>
+<entry key="recoverability.req"><![CDATA[
+Explaination of how the recoverability requirement (section 4.2.3) was met.
+]]></entry>
+<entry key="storage.req"><![CDATA[
+Explaination of how the non-volatile storage requirements (section 5.1) was met.
+]]></entry>
+<entry key="other.info"><![CDATA[
+Any additional information on the benchmark configuration should be included here.
+
+* If any software/hardware is used to influence the flow of network traffic beyond basic IP
+routing and switching, the additional software/hardware and settings must be disclosed.
+* Any relevant information on load-balancing mechanisms used must be disclosed.
+]]></entry>
+</properties>
+
+<properties name="bom">
+<entry key="bom"><![CDATA[
+The Bill Of Materials (BOM) must be listed here. A sample is provided below.
+--------  -------------------------------------------   ----------------   ---
+Supplier  Description                                   Product #          Qty
+--------  -------------------------------------------   ----------------   ---
+]]></entry>
+</properties>
+</info>
+
+
+<info type="hardware-info">
+
+    <properties name="jms-server">
+      <entry key="id">benchserver4</entry>
+      <entry key="name">BenchServer 4 HW (SUT hardware)</entry>
+      <entry key="vendor">HP</entry>
+      <entry key="model">ProLiant DL380 Gen9</entry>
+      <entry key="processor">Intel(R) Xeon(R) CPU E5-2640 v3</entry>
+      <entry key="mhz">2600</entry>
+      <entry key="available">Q3-2014</entry>
+      <entry key="filesystem">ext3</entry>
+      <entry key="disks">4x600GB Fusion-io ioDrive2</entry>
+      <entry key="networkInterface">(2) 10GbE Fibre Solarflare Communications SFC9020</entry>
+      <entry key="others"></entry>
+      <entry key="cpu.num_cores">16</entry>
+      <entry key="cpu.num_chips">2</entry>
+      <entry key="cpu.num_coresperchip">8</entry>
+      <entry key="memory.size">251GB</entry>
+      <entry key="cache.l1">512kB per socket</entry>
+      <entry key="cache.l2">2MB per socket</entry>
+      <entry key="cache.others"></entry>
+      <entry key="os.vendor">Red Hat Inc</entry>
+      <entry key="os.name">Red Hat Enterprise Linux 7.3</entry>
+      <entry key="os.available">2016-11-03</entry>
+      <entry key="systems.num">5</entry>
+      <entry key="notes"><![CDATA[
+
+sysctl net.ipv4.tcp_rmem
+
+sysctl -w net.ipv4.route.flush=1
+
+sysctl -w fs.file-max=524288
+sysctl -w kernel.shmall=10737418240
+sysctl -w kernel.shmmax=68719476736
+sysctl -w kernel.sem='250 32000 100 128'
+sysctl -w net.core.netdev_max_backlog=400000
+sysctl -w net.core.optmem_max=30000000
+sysctl -w net.core.rmem_default=30000000
+sysctl -w net.core.rmem_max=30000000
+sysctl -w net.core.somaxconn=40000
+sysctl -w net.core.wmem_default=30000000
+sysctl -w net.core.wmem_max=30000000
+sysctl -w net.ipv4.ip_local_port_range='1024 65535'
+sysctl -w net.ipv4.tcp_fin_timeout=10
+sysctl -w net.ipv4.tcp_max_syn_backlog=30000
+sysctl -w net.ipv4.tcp_max_tw_buckets=2000000
+sysctl -w net.ipv4.tcp_mem='30000000 30000000 30000000'
+sysctl -w net.ipv4.tcp_rmem='30000000 30000000 30000000'
+sysctl -w net.ipv4.tcp_timestamps=0
+sysctl -w net.ipv4.tcp_wmem='30000000 30000000 30000000'
+sysctl -w vm.zone_reclaim_mode=1
+
+sysctl -w net.ipv4.conf.all.arp_announce=2
+sysctl -w net.ipv4.conf.all.arp_ignore=1
+
+service tuned start
+tuned-adm profile latency-performance
+
+setenforce Permissive
+
+hugeadm --thp-never
+hugeadm --pool-pages-min 2M:198000M
+
+
+/root/set_irq_affinity.sh ens1
+ethtool -k ens1
+ethtool -K ens1 gro off lro off
+ethtool -K ens1 tso on gso on
+ethtool -k ens1
+ip link set ens1 txqueuelen 10000
+
+/root/set_irq_affinity.sh ens3f0
+ethtool -k ens3f0
+ethtool -K ens3f0 gro off lro off
+ethtool -K ens3f0 tso on gso on
+ethtool -k ens3f0
+ip link set ens3f0 txqueuelen 10000
+
+/root/set_irq_affinity.sh ens3f1
+ethtool -k ens3f1
+ethtool -K ens3f1 gro off lro off
+ethtool -K ens3f1 tso on gso on
+ethtool -k ens3f1
+ip link set ens3f1 txqueuelen 10000
+
+
+
+service irqbalance stop
+stop abrtd
+stop acpid
+stop alsasound
+stop anacron
+stop auditd
+stop autofs
+stop avahi-daemon
+stop bluetooth
+stop collectd
+stop conman
+stop cpuspeed
+stop crond
+stop cups
+stop cupsrenice
+stop dbus
+stop dhcdbd
+stop dnsmasq
+stop dund
+stop firstboot
+stop haldaemon
+stop hidd
+stop ip6tables
+stop iptables
+stop ipmi
+stop irda
+stop isdn
+stop jexce
+stop kudzu
+stop lvm2-monitor
+stop libvirtd
+stop cups-browsed
+stop NetworkManager
+stop rhsmcertd
+stop firewalld
+stop irqbalance
+for i in broker host network rpc service sysconfig
+do
+  stop matahari-$i
+done
+stop mcstrans
+stop mdmonitor
+stop mdmpd
+stop messagebus
+stop multipathd
+stop netconsole
+stop netfs
+stop netplugd
+stop nscd
+stop oddjobd
+stop openibd
+stop opensmd
+stop pand
+stop pcscd
+stop postfix
+stop powersaved
+stop psacct
+stop qpidd
+stop rdisc
+stop readahead_early
+stop readahead_later
+stop restorecond
+stop rpcidmapd
+stop rpcsvcgssd
+stop rhnsd
+stop rhel-dmesg
+stop rpcgssd
+stop saslauthd
+stop sendmail
+stop setroubleshoot
+stop slpd
+stop smartd
+stop smbfs
+stop suseRegister
+stop sysstat
+stop wpa_supplicant
+stop xfs
+stop ypbind
+stop yum-updatesd
+stop novell-zmd
+chkconfig --list|grep 3:on
+
+if test -e /bin/systemctl ; then
+    systemctl | grep service | egrep 'active|running'
+fi
+    ]]></entry>
+    </properties>
+
+
+    <properties name="client-node">
+      <entry key="id">hw-client-node-1</entry>
+      <entry key="name">Benchclient 1 HW (SUT hardware)</entry>
+      <entry key="vendor">HP</entry>
+      <entry key="model">ProLiant DL380 G7</entry>
+      <entry key="processor">Intel(R) Xeon(R) CPU X5660</entry>
+      <entry key="mhz">2800</entry>
+      <entry key="available"></entry>
+      <entry key="filesystem">ext3</entry>
+      <entry key="disks">4xHP EH0146FARUB 146GB 15K rpm 2.5 Inch 6Gbps</entry>
+      <entry key="networkInterface">1x 10GbE Fibre Solarflare Communications SFC9020</entry>
+      <entry key="others"></entry>
+      <entry key="cpu.num_cores">12</entry>
+      <entry key="cpu.num_chips">2</entry>
+      <entry key="cpu.num_coresperchip">6</entry>
+      <entry key="memory.size">64GB</entry>
+      <entry key="cache.l1">192 KB per core</entry>
+      <entry key="cache.l2">1536 KB per core</entry>
+      <entry key="cache.others">12288 KB per core </entry>
+      <entry key="os.vendor">Red Hat Inc</entry>
+      <entry key="os.name">Red Hat Enterprise Linux 7.1</entry>
+      <entry key="os.available"></entry>
+      <entry key="systems.num"></entry>
+      <entry key="notes"><![CDATA[
+service irqbalance stop
+tuna -Q | grep ens1
+/root/set_irq_affinity.sh ens1
+tuna -Q | grep ens1
+ethtool -k ens1
+ethtool -K ens1 gro off lro off
+ethtool -K ens1 tso on gso on
+ethtool -k ens1
+
+ip link set ens1 txqueuelen 10000
+
+
+stop abrtd
+stop acpid
+stop alsasound
+stop anacron
+stop auditd
+stop autofs
+stop avahi-daemon
+stop bluetooth
+stop collectd
+stop conman
+stop cpuspeed
+stop crond
+stop cups
+stop cupsrenice
+stop dbus
+stop dhcdbd
+stop dnsmasq
+stop dund
+stop firstboot
+stop haldaemon
+stop hidd
+stop ip6tables
+stop iptables
+stop ipmi
+stop irda
+stop isdn
+stop kudzu
+stop lvm2-monitor
+stop libvirtd
+stop cups-browsed
+stop irqbalance
+stop rhsmcertd
+stop rhel-dmesg
+for i in broker host network rpc service sysconfig
+do
+  stop matahari-$i
+done
+stop mcstrans
+stop mdmonitor
+stop mdmpd
+stop messagebus
+stop multipathd
+stop netconsole
+stop netfs
+stop netplugd
+stop nscd
+stop oddjobd
+stop openibd
+stop opensmd
+stop pand
+stop pcscd
+stop postfix
+stop powersaved
+stop psacct
+stop qpidd
+stop rdisc
+stop readahead_early
+stop readahead_later
+stop restorecond
+stop rpcidmapd
+stop rpcsvcgssd
+stop rhnsd
+stop rpcgssd
+stop saslauthd
+stop sendmail
+stop setroubleshoot
+stop slpd
+stop smartd
+stop smbfs
+stop suseRegister
+stop sysstat
+stop wpa_supplicant
+stop xfs
+stop ypbind
+stop yum-updatesd
+stop novell-zmd
+
+setenforce Permissive
+
+
+
+
+export INTERFACE=$(/sbin/ifconfig |grep -B1 "inet addr" |awk '{ if ( $1 == "inet" ) { print $2 } else if ( $2 == "Link" ) { printf "%s:" ,$1 } }' | grep $PRIV_IP |awk -F: '{ print $1 }')
+
+service irqbalance stop
+tuna -Q | grep ens1
+/root/set_irq_affinity.sh ens1
+tuna -Q | grep ens1
+sysctl net.ipv4.tcp_rmem
+
+sysctl -w net.ipv4.route.flush=1
+
+sysctl -w fs.file-max=1048576 #524288
+sysctl -w kernel.shmall=10737418240
+sysctl -w kernel.shmmax=68719476736
+sysctl -w kernel.sem='250 32000 100 128'
+sysctl -w net.core.netdev_max_backlog=400000
+sysctl -w net.core.optmem_max=30000000
+sysctl -w net.core.rmem_default=30000000
+sysctl -w net.core.rmem_max=30000000
+sysctl -w net.core.somaxconn=40000
+sysctl -w net.core.wmem_default=30000000
+sysctl -w net.core.wmem_max=30000000
+sysctl -w net.ipv4.ip_local_port_range='1024 65535'
+sysctl -w net.ipv4.tcp_fin_timeout=10
+sysctl -w net.ipv4.tcp_max_syn_backlog=30000
+sysctl -w net.ipv4.tcp_max_tw_buckets=2000000
+sysctl -w net.ipv4.tcp_mem='30000000 30000000 30000000'
+
+sysctl -w net.ipv4.tcp_rmem='30000000 30000000 30000000'
+sysctl -w net.ipv4.tcp_timestamps=0
+sysctl -w net.ipv4.tcp_wmem='30000000 30000000 30000000'
+sysctl -w vm.zone_reclaim_mode=1
+
+sysctl net.ipv4.tcp_rmem
+
+sysctl -w net.ipv4.conf.all.arp_announce=2
+sysctl -w net.ipv4.conf.all.arp_ignore=1
+
+ethtool -K ens1 gro off lro off
+ethtool -K ens1 tso on gso on
+ethtool -k ens1|grep -v fixed
+ip link set ens1 txqueuelen 10000
+
+sleep 5
+systemctl start tuned
+tuned-adm profile latency-performance
+    
+]]></entry>
+    </properties>
+
+    <properties name="client-node">
+      <entry key="id">hw-client-node-2</entry>
+      <entry key="name">Benchclient 2 HW (SUT hardware)</entry>
+      <entry key="vendor">HP</entry>
+      <entry key="model">ProLiant DL380 G7</entry>
+      <entry key="processor">Intel(R) Xeon(R) CPU X5660</entry>
+      <entry key="mhz">2800</entry>
+      <entry key="available"></entry>
+      <entry key="filesystem">ext3</entry>
+      <entry key="disks">4xHP EH0146FARUB 146GB 15K rpm 2.5 Inch 6Gbps</entry>
+      <entry key="networkInterface">1x 10GbE Fibre Solarflare Communications SFC9020</entry>
+      <entry key="others"></entry>
+      <entry key="cpu.num_cores">12</entry>
+      <entry key="cpu.num_chips">2</entry>
+      <entry key="cpu.num_coresperchip">6</entry>
+      <entry key="memory.size">64GB</entry>
+      <entry key="cache.l1">192 KB per core</entry>
+      <entry key="cache.l2">1536 KB per core</entry>
+      <entry key="cache.others">12288 KB per core </entry>
+      <entry key="os.vendor">Red Hat Inc</entry>
+      <entry key="os.name">Red Hat Enterprise Linux 7.1</entry>
+      <entry key="os.available"></entry>
+      <entry key="systems.num"></entry>
+
+      <entry key="notes"><![CDATA[
+service irqbalance stop
+tuna -Q | grep ens2
+/root/set_irq_affinity.sh ens2
+tuna -Q | grep ens2
+ethtool -k ens2
+ethtool -K ens2 gro off lro off
+ethtool -K ens2 tso on gso on
+ethtool -k ens2
+
+ip link set ens2 txqueuelen 10000
+
+
+stop abrtd
+stop acpid
+stop alsasound
+stop anacron
+stop auditd
+stop autofs
+stop avahi-daemon
+stop bluetooth
+stop collectd
+stop conman
+stop cpuspeed
+stop crond
+stop cups
+stop cupsrenice
+stop dbus
+stop dhcdbd
+stop dnsmasq
+stop dund
+stop firstboot
+stop haldaemon
+stop hidd
+stop ip6tables
+stop iptables
+stop ipmi
+stop irda
+stop isdn
+stop kudzu
+stop lvm2-monitor
+stop libvirtd
+stop cups-browsed
+stop irqbalance
+stop rhsmcertd
+stop rhel-dmesg
+for i in broker host network rpc service sysconfig
+do
+  stop matahari-$i
+done
+stop mcstrans
+stop mdmonitor
+stop mdmpd
+stop messagebus
+stop multipathd
+stop netconsole
+stop netfs
+stop netplugd
+stop nscd
+stop oddjobd
+stop openibd
+stop opensmd
+stop pand
+stop pcscd
+stop postfix
+stop powersaved
+stop psacct
+stop qpidd
+stop rdisc
+stop readahead_early
+stop readahead_later
+stop restorecond
+stop rpcidmapd
+stop rpcsvcgssd
+stop rhnsd
+stop rpcgssd
+stop saslauthd
+stop sendmail
+stop setroubleshoot
+stop slpd
+stop smartd
+stop smbfs
+stop suseRegister
+stop sysstat
+stop wpa_supplicant
+stop xfs
+stop ypbind
+stop yum-updatesd
+stop novell-zmd
+
+setenforce Permissive
+
+
+
+
+export INTERFACE=$(/sbin/ifconfig |grep -B1 "inet addr" |awk '{ if ( $1 == "inet" ) { print $2 } else if ( $2 == "Link" ) { printf "%s:" ,$1 } }' | grep $PRIV_IP |awk -F: '{ print $1 }')
+
+service irqbalance stop
+tuna -Q | grep ens2
+/root/set_irq_affinity.sh ens2
+tuna -Q | grep ens2
+sysctl net.ipv4.tcp_rmem
+
+sysctl -w net.ipv4.route.flush=1
+
+sysctl -w fs.file-max=1048576
+sysctl -w kernel.shmall=10737418240
+sysctl -w kernel.shmmax=68719476736
+sysctl -w kernel.sem='250 32000 100 128'
+sysctl -w net.core.netdev_max_backlog=400000
+sysctl -w net.core.optmem_max=30000000
+sysctl -w net.core.rmem_default=30000000
+sysctl -w net.core.rmem_max=30000000
+sysctl -w net.core.somaxconn=40000
+sysctl -w net.core.wmem_default=30000000
+sysctl -w net.core.wmem_max=30000000
+sysctl -w net.ipv4.ip_local_port_range='1024 65535'
+sysctl -w net.ipv4.tcp_fin_timeout=10
+sysctl -w net.ipv4.tcp_max_syn_backlog=30000
+sysctl -w net.ipv4.tcp_max_tw_buckets=2000000
+sysctl -w net.ipv4.tcp_mem='30000000 30000000 30000000'
+sysctl -w net.ipv4.tcp_rmem='30000000 30000000 30000000'
+sysctl -w net.ipv4.tcp_timestamps=0
+sysctl -w net.ipv4.tcp_wmem='30000000 30000000 30000000'
+sysctl -w vm.zone_reclaim_mode=1
+
+sysctl -w net.ipv4.conf.all.arp_announce=2
+sysctl -w net.ipv4.conf.all.arp_ignore=1
+
+echo "Setting huge page memory"
+hugeadm --pool-pages-min 2M:24576M
+hugeadm --thp-never
+
+ethtool -K ens2 gro off lro off
+ethtool -K ens2 tso on gso on
+ethtool -k ens2|grep -v fixed
+ip link set ens2 txqueuelen 10000
+
+sleep 5
+systemctl start tuned
+tuned-adm profile latency-performance
+
+    ]]></entry>
+    </properties>
+
+    <properties name="client-node">
+      <entry key="id">hw-client-node-3</entry>
+      <entry key="name">Benchclient 3 HW (SUT hardware)</entry>
+      <entry key="vendor">HP</entry>
+      <entry key="model">ProLiant DL380 Gen9</entry>
+      <entry key="processor">Intel(R) Xeon(R) CPU E5-2637 v3</entry>
+      <entry key="mhz">3500</entry>
+      <entry key="available"></entry>
+      <entry key="filesystem">ext3</entry>
+      <entry key="disks">2x136GB 15K</entry>
+      <entry key="networkInterface">2x 10GbE Solarflare Communications SFC9020 </entry>
+      <entry key="others"></entry>
+      <entry key="cpu.num_cores">8</entry>
+      <entry key="cpu.num_chips">2</entry>
+      <entry key="cpu.num_coresperchip">4</entry>
+      <entry key="memory.size">128 GB</entry>
+      <entry key="cache.l1">256 KB per chip</entry>
+      <entry key="cache.l2">1024 KB per chip</entry>
+      <entry key="cache.others">15360 KB per chip</entry>
+      <entry key="os.vendor">Red Hat Inc</entry>
+      <entry key="os.name">Red Hat Enterprise Linux Server release 7.2</entry>
+      <entry key="os.available"></entry>
+      <entry key="systems.num"></entry>
+      <entry key="notes"><![CDATA[
+
+
+stop abrtd
+stop acpid
+stop alsasound
+stop anacron
+stop auditd
+stop autofs
+stop avahi-daemon
+stop bluetooth
+stop collectd
+stop conman
+stop cpuspeed
+stop crond
+stop cups
+stop cupsrenice
+stop dbus
+stop dhcdbd
+stop dnsmasq
+stop dund
+stop firstboot
+stop haldaemon
+stop hidd
+stop ip6tables
+stop iptables
+stop ipmi
+stop irda
+stop isdn
+stop kudzu
+stop lvm2-monitor
+stop libvirtd
+stop cups-browsed
+stop irqbalance
+stop rhsmcertd
+stop rhel-dmesg
+for i in broker host network rpc service sysconfig
+do
+  stop matahari-$i
+done
+stop mcstrans
+stop mdmonitor
+stop mdmpd
+stop messagebus
+stop multipathd
+stop netconsole
+stop netfs
+stop netplugd
+stop nscd
+stop oddjobd
+stop openibd
+stop opensmd
+stop pand
+stop pcscd
+stop postfix
+stop powersaved
+stop psacct
+stop qpidd
+stop rdisc
+stop readahead_early
+stop readahead_later
+stop restorecond
+stop rpcidmapd
+stop rpcsvcgssd
+stop rhnsd
+stop rpcgssd
+stop saslauthd
+stop sendmail
+stop setroubleshoot
+stop slpd
+stop smartd
+stop smbfs
+stop suseRegister
+stop sysstat
+stop wpa_supplicant
+stop xfs
+stop ypbind
+stop yum-updatesd
+stop novell-zmd
+
+
+
+service irqbalance stop
+tuna -Q | grep ens1f1
+/root/set_irq_affinity.sh ens1f1
+tuna -Q | grep ens1f1
+sysctl net.ipv4.tcp_rmem
+
+#sysctl -w net.core.rmem_max=99075072
+#sysctl -w net.core.wmem_max=99075072
+
+#sysctl -w net.core.rmem_default=49537536
+#sysctl -w net.core.wmem_default=49537536
+
+#sysctl -w net.ipv4.tcp_rmem='12384384 49537536 99075072'
+#sysctl -w net.ipv4.tcp_wmem='12384384 41943040 99075072'
+#sysctl -w net.ipv4.tcp_mem='12384384 49537536 99075072'
+
+sysctl -w net.ipv4.route.flush=1
+
+
+sysctl -w fs.file-max=524288
+sysctl -w kernel.shmall=10737418240
+sysctl -w kernel.shmmax=68719476736
+sysctl -w kernel.sem='250 32000 100 128'
+
+sysctl -w net.core.netdev_max_backlog=400000
+sysctl -w net.core.optmem_max=30000000
+sysctl -w net.core.rmem_default=30000000
+sysctl -w net.core.rmem_max=30000000
+sysctl -w net.core.somaxconn=40000
+sysctl -w net.core.wmem_default=30000000
+sysctl -w net.core.wmem_max=30000000
+sysctl -w net.ipv4.ip_local_port_range='1024 65000'
+sysctl -w net.ipv4.tcp_fin_timeout=10
+sysctl -w net.ipv4.tcp_max_syn_backlog=30000
+sysctl -w net.ipv4.tcp_max_tw_buckets=2000000
+sysctl -w net.ipv4.tcp_mem='30000000 30000000 30000000'
+sysctl -w net.ipv4.tcp_rmem='30000000 30000000 30000000'
+sysctl -w net.ipv4.tcp_timestamps=0
+sysctl -w net.ipv4.tcp_wmem='30000000 30000000 30000000'
+sysctl -w vm.zone_reclaim_mode=1
+
+#sysctl -w net.ipv4.tcp_rmem="12384384 16512512 49537536"
+sysctl net.ipv4.tcp_rmem
+ethtool -k ens1f1
+ethtool -K ens1f1 gro off lro off
+ethtool -K ens1f1 tso on gso on
+ethtool -k ens1f1
+
+sysctl -w net.ipv4.conf.all.arp_announce=2
+sysctl -w net.ipv4.conf.all.arp_ignore=1
+
+/sbin/ifconfig ens1f1 txqueuelen 10000
+
+service tuned start
+tuned-adm profile latency-performance
+
+
+    ]]></entry>
+    </properties>
+
+
+    <properties name="client-node">
+      <entry key="id">hw-client-node-4</entry>
+      <entry key="name">Benchclient 4 HW (SUT hardware)</entry>
+      <entry key="vendor">HP</entry>
+      <entry key="model">ProLiant DL380 Gen9</entry>
+      <entry key="processor">Intel(R) Xeon(R) CPU E5-2637 v3</entry>
+      <entry key="mhz">3500</entry>
+      <entry key="available"></entry>
+      <entry key="filesystem">ext3</entry>
+      <entry key="disks">2x136GB 15K</entry>
+      <entry key="networkInterface">2x 10GbE Solarflare Communications SFC9020 </entry>
+      <entry key="others"></entry>
+      <entry key="cpu.num_cores">8</entry>
+      <entry key="cpu.num_chips">2</entry>
+      <entry key="cpu.num_coresperchip">4</entry>
+      <entry key="memory.size">128 GB</entry>
+      <entry key="cache.l1">256 KB per chip</entry>
+      <entry key="cache.l2">1024 KB per chip</entry>
+      <entry key="cache.others">15360 KB per chip</entry>
+      <entry key="os.vendor">Red Hat Inc</entry>
+      <entry key="os.name">Red Hat Enterprise Linux Server release 7.2</entry>
+      <entry key="os.available"></entry>
+      <entry key="systems.num"></entry>
+      <entry key="notes"><![CDATA[
+
+
+stop abrtd
+stop acpid
+stop alsasound
+stop anacron
+stop auditd
+stop autofs
+stop avahi-daemon
+stop bluetooth
+stop collectd
+stop conman
+stop cpuspeed
+stop crond
+stop cups
+stop cupsrenice
+stop dbus
+stop dhcdbd
+stop dnsmasq
+stop dund
+stop firstboot
+stop haldaemon
+stop hidd
+stop ip6tables
+stop iptables
+stop ipmi
+stop irda
+stop isdn
+stop kudzu
+stop lvm2-monitor
+stop libvirtd
+stop cups-browsed
+stop irqbalance
+stop rhsmcertd
+stop rhel-dmesg
+for i in broker host network rpc service sysconfig
+do
+  stop matahari-$i
+done
+stop mcstrans
+stop mdmonitor
+stop mdmpd
+stop messagebus
+stop multipathd
+stop netconsole
+stop netfs
+stop netplugd
+stop nscd
+stop oddjobd
+stop openibd
+stop opensmd
+stop pand
+stop pcscd
+stop postfix
+stop powersaved
+stop psacct
+stop qpidd
+stop rdisc
+stop readahead_early
+stop readahead_later
+stop restorecond
+stop rpcidmapd
+stop rpcsvcgssd
+stop rhnsd
+stop rpcgssd
+stop saslauthd
+stop sendmail
+stop setroubleshoot
+stop slpd
+stop smartd
+stop smbfs
+stop suseRegister
+stop sysstat
+stop wpa_supplicant
+stop xfs
+stop ypbind
+stop yum-updatesd
+stop novell-zmd
+
+
+
+service irqbalance stop
+tuna -Q | grep ens1f1
+/root/set_irq_affinity.sh ens1f1
+tuna -Q | grep ens1f1
+sysctl net.ipv4.tcp_rmem
+
+#sysctl -w net.core.rmem_max=99075072
+#sysctl -w net.core.wmem_max=99075072
+
+#sysctl -w net.core.rmem_default=49537536
+#sysctl -w net.core.wmem_default=49537536
+
+#sysctl -w net.ipv4.tcp_rmem='12384384 49537536 99075072'
+#sysctl -w net.ipv4.tcp_wmem='12384384 41943040 99075072'
+#sysctl -w net.ipv4.tcp_mem='12384384 49537536 99075072'
+
+sysctl -w net.ipv4.route.flush=1
+
+
+sysctl -w fs.file-max=524288
+sysctl -w kernel.shmall=10737418240
+sysctl -w kernel.shmmax=68719476736
+sysctl -w kernel.sem='250 32000 100 128'
+
+sysctl -w net.core.netdev_max_backlog=400000
+sysctl -w net.core.optmem_max=30000000
+sysctl -w net.core.rmem_default=30000000
+sysctl -w net.core.rmem_max=30000000
+sysctl -w net.core.somaxconn=40000
+sysctl -w net.core.wmem_default=30000000
+sysctl -w net.core.wmem_max=30000000
+sysctl -w net.ipv4.ip_local_port_range='1024 65000'
+sysctl -w net.ipv4.tcp_fin_timeout=10
+sysctl -w net.ipv4.tcp_max_syn_backlog=30000
+sysctl -w net.ipv4.tcp_max_tw_buckets=2000000
+sysctl -w net.ipv4.tcp_mem='30000000 30000000 30000000'
+sysctl -w net.ipv4.tcp_rmem='30000000 30000000 30000000'
+sysctl -w net.ipv4.tcp_timestamps=0
+sysctl -w net.ipv4.tcp_wmem='30000000 30000000 30000000'
+sysctl -w vm.zone_reclaim_mode=1
+
+#sysctl -w net.ipv4.tcp_rmem="12384384 16512512 49537536"
+sysctl net.ipv4.tcp_rmem
+ethtool -k ens1f1
+ethtool -K ens1f1 gro off lro off
+ethtool -K ens1f1 tso on gso on
+ethtool -k ens1f1
+
+sysctl -w net.ipv4.conf.all.arp_announce=2
+sysctl -w net.ipv4.conf.all.arp_ignore=1
+
+/sbin/ifconfig ens1f1 txqueuelen 10000
+
+service tuned start
+tuned-adm profile latency-performance
+
+
+    ]]></entry>
+    </properties>
+
+
+  </info>
+
+  <info type="product-info">
+    <properties name="jvm-product">
+      <entry key="id">jvm-product</entry>
+      <entry key="name">Java(TM) SE Runtime Environment (build 1.8.0_65-b17)</entry>
+      <entry key="vendor"></entry>
+      <entry key="os"></entry>
+      <entry key="avail"></entry>
+    </properties>
+  </info>
+
+  <info type="node-info">
+    <properties name="jms-server-node">
+      <entry key="id">sw-jms-server-1</entry>
+      <entry key="name">JMS Server 1 SW Config</entry>
+      <entry key="product.jms.id">jms-product-1</entry>
+      <entry key="product.jvm.id">jvm-product-1</entry>
+      <entry key="product.jdbc.id">jdbc-product-1</entry>
+      <entry key="product.other.id">other-product-1</entry>
+      <entry key="product.other.id">other-product-2</entry>
+      <entry key="hw.id">hw-jms-server-1</entry>
+      <entry key="instances">1</entry>
+      <entry key="notes"><![CDATA[
+-XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms18g -Xmx18g -Dhawtio.realm=activemq -Dhawtio.role=amq -Dhawtio.rolePrincipalClasses=org.apache.activemq.artemis.spi.core.security.jaas.RolePrincipal -verbose:gc -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/ -Xloggc:/tmp/specjms.amq7.%t.%p.gclog
+
+      ]]></entry>
+    </properties>
+
+    <properties name="client-node">
+      <entry key="id">sw-client-node-1</entry>
+      <entry key="name">Client Node 1 SW Config</entry>
+      <entry key="product.jvm.id">jvm-product</entry>
+      <entry key="jvm.instances">1</entry>
+      <entry key="hw.id">hw-client-node-1</entry>
+      <entry key="instances">1</entry>
+      <entry key="agents">10</entry>
+      <entry key="notes"><![CDATA[
+-Dorg.apache.activemq.SERIALIZABLE_PACKAGES=* -Xms2G -Xmx2G -Xss1048K -XX:+UseParallelGC -XX:+UseParallelOldGC -XX:+ParallelRefProcEnabled -XX:ParallelGCThreads=4 -verbose:gc -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/ -Xloggc:/tmp/specjms.verbose-gc-sp.%t.%p.gclog
+      ]]></entry>
+    </properties>
+
+    <properties name="client-node">
+      <entry key="id">sw-client-node-2</entry>
+      <entry key="name">Client Node 2 SW Config</entry>
+      <entry key="product.jvm.id">jvm-product</entry>
+      <entry key="jvm.instances">1</entry>
+      <entry key="hw.id">hw-client-node-2</entry>
+      <entry key="instances">1</entry>
+      <entry key="agents">10</entry>
+      <entry key="notes"><![CDATA[
+-Dorg.apache.activemq.SERIALIZABLE_PACKAGES=* -Xms2G -Xmx2G -Xss1048K -XX:+UseParallelGC -XX:+UseParallelOldGC -XX:+ParallelRefProcEnabled -XX:ParallelGCThreads=4 -verbose:gc -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/ -Xloggc:/tmp/specjms.verbose-gc-sp.%t.%p.gclog
+      ]]></entry>
+    </properties>
+
+    <properties name="client-node">
+      <entry key="id">sw-client-node-3</entry>
+      <entry key="name">Benchclient 3 SW Config</entry>
+      <entry key="product.jvm.id">jvm-product</entry>
+      <entry key="jvm.instances">1</entry>
+      <entry key="hw.id">hw-client-node-3</entry>
+      <entry key="instances">1</entry>
+      <entry key="agents">10</entry>
+      <entry key="notes"><![CDATA[
+  -Dorg.apache.activemq.SERIALIZABLE_PACKAGES=* -Xms2G -Xmx2G -Xss1048K -XX:+UseParallelGC -XX:+UseParallelOldGC -XX:+ParallelRefProcEnabled -XX:ParallelGCThreads=4 -verbose:gc -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/ -Xloggc:/tmp/specjms.verbose-gc-sp.%t.%p.gclog
+      ]]></entry>
+    </properties>
+
+    <properties name="client-node">
+      <entry key="id">sw-client-node-4</entry>
+      <entry key="name">Benchclient 4 SW Config</entry>
+      <entry key="product.jvm.id">jvm-product</entry>
+      <entry key="jvm.instances">1</entry>
+      <entry key="hw.id">hw-client-node-3</entry>
+      <entry key="instances">1</entry>
+      <entry key="agents">10</entry>
+      <entry key="notes"><![CDATA[
+  -Dorg.apache.activemq.SERIALIZABLE_PACKAGES=* -Xms2G -Xmx2G -Xss1048K -XX:+UseParallelGC -XX:+UseParallelOldGC -XX:+ParallelRefProcEnabled -XX:ParallelGCThreads=4 -verbose:gc -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/ -Xloggc:/tmp/specjms.verbose-gc-sp.%t.%p.gclog
+      ]]></entry>
+    </properties>
+
+ 
+  </info>
+
+</configuration>
+
